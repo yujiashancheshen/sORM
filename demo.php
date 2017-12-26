@@ -51,10 +51,15 @@ $where2 = [
 ];
 
 //$data = UserModel::select($condition);
-$data = UserModel::update($where2, $updateData);
+//$data = UserModel::update($where2, $updateData);
 //$data = UserModel::insert($insertData2);
 //$data = UserModel::delete($where);
+//$data = UserModel::count($where2);
+
+$user = UserModel::findByAge(23);
+
+var_dump($user);
+var_dump($user->id);
 
 var_dump(UserModel::getLastQuery());
 
-var_dump($data);

@@ -12,7 +12,85 @@ class model {
 
     public static $table;
 
+    // 保存最后一次执行的sql和参数
     private static $lastQuery;
+
+    // 表的主键
+    public static $primaryKey;
+
+    public function __construct($data) {
+        $fields = static::$fields;
+        foreach ($data as $key => $value) {
+            $field = $fields[$key];
+            $this->$field = $value; 
+        }
+    }
+
+    /**
+    * @desc find 
+    * 根据主键获取
+    *
+    * @Param $id
+    *
+    * @return 
+    */
+    public static function find($id) {
+        if (!static::$primaryKey) {
+           return null; 
+        }
+
+        $condition = [
+            'where' => [
+                static::$primaryKey => $id,
+            ],
+            'limit' => 1
+        ];
+
+        $data = self::select($condition);
+        if ($data) {
+            $model = get_called_class();
+            return new $model($data[0]);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+    * @desc __callStatic 
+    *
+    * @Param $method
+    * @Param $args
+    *
+    * @return 
+    */
+    public static function __callStatic($method, $args) {
+        if (strpos($method, 'findBy') ===0) {
+            $method = substr($method, 6);
+            $params = explode('And', $method);
+            
+            $index = 0;
+            $where = [];
+            $fields = array_flip(static::$fields);
+            foreach ($params as $param) {
+                $where[$fields[lcfirst($param)]] = $args[$index];
+                $index++;
+            }
+            
+            $data = [];
+            $model = get_called_class();
+
+            $condition['where'] = $where;
+            $records = self::select($condition);
+            foreach ($records as $record) {   
+                array_push($data, new $model($record));    
+            }
+            
+        } else {
+            return null;
+        }
+
+        return $data;
+    }
 
     /**
      * $condition = [
@@ -37,6 +115,8 @@ class model {
 
         if ($condition['select']) {
             $sql = 'select ' . $condition['select'] . ' from ' . static::$table;
+        } else {
+            $sql = 'select * from ' . static::$table;
         }
 
         if ($condition['where']) {
@@ -221,7 +301,6 @@ class model {
         ];
     }
 
-
     /**
     * @desc execSql 
     * 提供对外接口，专门直接执行sql 
@@ -233,7 +312,6 @@ class model {
     public static function execSql($sql) {
 
     }
-
     
     /**
     * @desc query 
@@ -263,16 +341,25 @@ class model {
         return self::$lastQuery[static::$table];
     }
 
-    public static function count($where) {
+    /**
+    * @desc count 
+    *
+    * @Param $where
+    *
+    * @return 
+    */
+    public static function count($where = []) {
 
-    }
+        $sql = 'select count(*) from ' . static::$table;
 
-    public function getByIdAndNameOrSex($id, $name, $sex) {
+        if ($where) {
+            $sqlWhere = self::_buildWhereSql($where);
+            $sql = $sql . ' ' . $sqlWhere['sql'];
+        }
 
-    }
+        $sql = $sql . ' limit 1';
 
-    public function listByIdAndNameOrSex($id, $name, $sex) {
-
+        return intval(self::query($sql, $sqlWhere['params'])[0]['count(*)']);
     }
 }
 
