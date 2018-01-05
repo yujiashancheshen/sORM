@@ -21,3 +21,7 @@ Sorm
 ├── dbConfig.php            #数据库配置 
 ```
 
+## 使用方法
+1. 按照格式配置config.php文件 
+2. 运行bin/gen_model.php脚本，就可以生成model中的各个文件 
+3. 运行按照demo.php的例子进行调用就可以访问数据库 

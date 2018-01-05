@@ -10,6 +10,7 @@
  */
 class model {
 
+    // 表名
     public static $table;
 
     // 保存最后一次执行的sql和参数
@@ -18,11 +19,10 @@ class model {
     // 表的主键
     public static $primaryKey;
 
-    public function __construct($data) {
+    public function __construct($data = []) {
         $fields = static::$fields;
-        foreach ($data as $key => $value) {
-            $field = $fields[$key];
-            $this->$field = $value; 
+        foreach ($fields as $key => $value) {
+            $this->$value = $data[$key];
         }
     }
 
@@ -360,6 +360,34 @@ class model {
         $sql = $sql . ' limit 1';
 
         return intval(self::query($sql, $sqlWhere['params'])[0]['count(*)']);
+    }
+
+    /**
+    * @desc save 
+    * 如果存在就更新，如果不存在就插入 
+    *
+    * @return 
+    */
+    public function save() {
+        $data = [];
+        $fields = static::$fields;
+        foreach ($fields as $key => $value) {
+            if ($this->$value) {
+                $data[$key] = $this->$value; 
+            }
+        }
+
+        // 如果存在主键，就进行更新
+        $primaryKey = static::$primaryKey;
+
+        if ($this->$primaryKey) {
+            unset($data[$primaryKey]);
+            $where[$primaryKey] = $this->$primaryKey;
+            
+            self::update($where, $data);
+        } else { // 不存在就增加 
+            $this->$primaryKey = self::insert($data);
+        }
     }
 }
 

@@ -1,7 +1,7 @@
 <?php
 ini_set('display_errors', 1);
-//error_reporting(E_ERROR | E_WARNING);
-error_reporting(E_ALL);
+error_reporting(E_ERROR | E_WARNING);
+//error_reporting(E_ALL);
 
 require_once __DIR__ . "/model/UserModel.php";
 require_once __DIR__ . "/orm/db.php";
@@ -57,10 +57,18 @@ $where2 = [
 //$data = UserModel::delete($where);
 //$data = UserModel::count($where2);
 
-$user = UserModel::findByAge(23);
+//$user = UserModel::findByAge(23);
+//
+//var_dump($user);
+//var_dump($user->id);
+//
+//var_dump(UserModel::getLastQuery());
 
+$user = new UserModel();
 var_dump($user);
-var_dump($user->id);
-
-var_dump(UserModel::getLastQuery());
-
+$user->id = 11;
+$user->name = '汪卓';
+$user->age = 51;
+var_dump($user);
+$user->save();
+var_dump($user);
